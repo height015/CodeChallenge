@@ -27,7 +27,7 @@ public class ExUsersController : ControllerBase
                return BadRequest("list is empty!");
                 
             }
-
+            _logger.LogInformation("Fetched on {Time}", DateTime.Now);
             return Ok(retList);
         }
         catch (Exception ex)
