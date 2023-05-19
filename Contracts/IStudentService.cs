@@ -14,5 +14,11 @@ public interface IStudentService
     Task<StudentResponse> Delete(int Id);
 
     Task<IEnumerable<Student>> List();
+
+    IQueryable<Student> ApplySorting(IQueryable<Student> query, string sortBy, string sortDirection);
+
+    IQueryable<Student> ApplyFiltering(IQueryable<Student> query, Dictionary<string, string> filters);
+
+    IQueryable<Student> ApplyPagination(IQueryable<Student> query, int pageNumber, int pageSize);
 }
 

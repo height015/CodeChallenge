@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
+﻿using System.ComponentModel.DataAnnotations;
 using CodeChallenge.Helpers;
 
 namespace CodeChallenge.Domain;
@@ -30,7 +28,6 @@ public class Student  : BaseEntity
     [DataType(DataType.Date)]
     [Required(ErrorMessage = "Date Of Birth is required", AllowEmptyStrings = false)]
     public DateTime DateOfBirth { get; set; }
-
 
     public ICollection<Grade> Grades { get; set; }
     public ICollection<StudentCourse> StudentCourses { get; set; }
