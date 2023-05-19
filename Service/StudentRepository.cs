@@ -136,7 +136,7 @@ public class StudentRepository : IStudentService
 
     }
 
-    public async Task<IEnumerable<Student>> List()
+    public async Task<IQueryable<Student>> List()
     {
         var retVal = Enumerable.Empty<Student>();
 
@@ -147,20 +147,15 @@ public class StudentRepository : IStudentService
                      where c != null
                      select c;
 
-            return await Task.FromResult(retVal.ToList());
+            return await Task.FromResult(retVal.AsQueryable());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message);
-            return retVal;
+            return Enumerable.Empty<Student>().AsQueryable();
         }
 
     }
-
-
-
-
-
 
 
 
@@ -207,44 +202,44 @@ public class StudentRepository : IStudentService
 
 
 
-    public IQueryable<Student> ApplySorting(IQueryable<Student> query, string sortBy, string sortDirection)
-    {
-        if (!string.IsNullOrEmpty(sortBy))
-        {
-            // Determine the property to sort by using reflection
-            var propertyInfo = typeof(Student).GetProperty(sortBy, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-            if (propertyInfo != null)
-            {
-                if (string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase))
-                {
-                    query = query.OrderByDescending(x => propertyInfo.GetValue(x, null));
-                }
-                else
-                {
-                    query = query.OrderBy(x => propertyInfo.GetValue(x, null));
-                }
-            }
-        }
-        return query;
-    }
+    //public IQueryable<Student> ApplySorting(IQueryable<Student> query, string sortBy, string sortDirection)
+    //{
+    //    if (!string.IsNullOrEmpty(sortBy))
+    //    {
+    //        // Determine the property to sort by using reflection
+    //        var propertyInfo = typeof(Student).GetProperty(sortBy, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+    //        if (propertyInfo != null)
+    //        {
+    //            if (string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase))
+    //            {
+    //                query = query.OrderByDescending(x => propertyInfo.GetValue(x, null));
+    //            }
+    //            else
+    //            {
+    //                query = query.OrderBy(x => propertyInfo.GetValue(x, null));
+    //            }
+    //        }
+    //    }
+    //    return query;
+    //}
 
-    public IQueryable<Student> ApplyFiltering(IQueryable<Student> query, Dictionary<string, string> filters)
-    {
-        foreach (var filter in filters)
-        {
-            var propertyInfo = typeof(Student).GetProperty(filter.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-            if (propertyInfo != null)
-            {
-                query = query.Where(x => propertyInfo.GetValue(x, null).ToString().Contains(filter.Value, StringComparison.OrdinalIgnoreCase));
-            }
-        }
-        return query;
-    }
+    //public IQueryable<Student> ApplyFiltering(IQueryable<Student> query, Dictionary<string, string> filters)
+    //{
+    //    foreach (var filter in filters)
+    //    {
+    //        var propertyInfo = typeof(Student).GetProperty(filter.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+    //        if (propertyInfo != null)
+    //        {
+    //            query = query.Where(x => propertyInfo.GetValue(x, null).ToString().Contains(filter.Value, StringComparison.OrdinalIgnoreCase));
+    //        }
+    //    }
+    //    return query;
+    //}
 
-    public IQueryable<Student> ApplyPagination(IQueryable<Student> query, int pageNumber, int pageSize)
-    {
-        return query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-    }
+    //public IQueryable<Student> ApplyPagination(IQueryable<Student> query, int pageNumber, int pageSize)
+    //{
+    //    return query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+    //}
 
 
 

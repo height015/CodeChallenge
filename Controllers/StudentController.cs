@@ -1,11 +1,12 @@
-﻿using System;
+﻿using System.Globalization;
 using System.Net;
 using System.Reflection;
 using CodeChallenge.Contracts;
+using CodeChallenge.Data.Repository;
 using CodeChallenge.Domain;
 using CodeChallenge.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 
 namespace CodeChallenge.Controllers;
 
@@ -96,71 +97,74 @@ public class StudentController : BaseApiController
 
 
         [HttpGet("list")]
-        public async Task<ActionResult<IEnumerable<Student>>> List([FromQuery] QueryParameters parameters)
+        public async Task<ActionResult<IEnumerable<Student>>> List(string sortBy, string sortDirection, string filterValue, int pageNumber = 1, int pageSize = 10)
         {
-            var students = await _studentService.List();
 
-            if (parameters.SortBy != null && parameters.SortDirection != null)
+        //var students = await _studentService.List();
+
+        //if (parameters.SortBy != null && parameters.SortDirection != null)
+        //{
+        //    students = SortStudents(students, parameters.SortBy, parameters.SortDirection);
+        //}
+
+        //if (parameters.FilterBy != null)
+        //{
+        //    students = FilterStudents(students, parameters.FilterBy);
+        //}
+
+        //var totalCount = students.Count();
+
+        //if (parameters.PageNumber > 0 && parameters.PageSize > 0)
+        //{
+        //    students = PaginateStudents(students, parameters.PageNumber, parameters.PageSize);
+        //}
+
+        try
+        {
+            // Get the initial query
+            IQueryable<Student> query = await _studentService.List();
+
+            // Apply filtering
+            if (!string.IsNullOrEmpty(filterValue))
             {
-                students = SortStudents(students, parameters.SortBy, parameters.SortDirection);
+                var filters = new Dictionary<string, string>
+                {
+                    // will Set up my filters here based on the filterValue input
+                    // For example:
+                    // { "FirstName", filterValue },
+                    // { "LastName", filterValue }
+                };
+
+                query = query.ApplyFiltering(filters);
             }
 
-            if (parameters.FilterBy != null)
+            // Apply sorting
+            if (!string.IsNullOrEmpty(sortBy))
             {
-                students = FilterStudents(students, parameters.FilterBy);
+                query = query.ApplySorting(sortBy, sortDirection);
             }
 
-            var totalCount = students.Count();
+            query = query.ApplyPagination(pageNumber, pageSize);
 
-            if (parameters.PageNumber > 0 && parameters.PageSize > 0)
-            {
-                students = PaginateStudents(students, parameters.PageNumber, parameters.PageSize);
-            }
+            var students = await query.ToListAsync();
 
-            var response = new
-            {
-                TotalCount = totalCount,
-                PageNumber = parameters.PageNumber,
-                PageSize = parameters.PageSize,
-                Students = students
-            };
-
-            return Ok(response);
+        
+            return Ok(students);
         }
+        catch (Exception ex)
+        {
+            // Handle the exception
+            // Log the error, return an error response, etc.
+            return StatusCode(500, "An error occurred");
+        }
+    }
+
+           
+        
 
     #region Utility
-
-    private IEnumerable<Student> SortStudents(IEnumerable<Student> students, string sortBy, string sortDirection)
-    {
-        var propertyInfo = typeof(Student).GetProperty(sortBy, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-        if (propertyInfo != null)
-        {
-            if (string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase))
-            {
-                students = students.OrderByDescending(x => propertyInfo.GetValue(x, null));
-            }
-            else
-            {
-                students = students.OrderBy(x => propertyInfo.GetValue(x, null));
-            }
-        }
-        return students;
-    }
-
-    private IEnumerable<Student> FilterStudents(IEnumerable<Student> students, Dictionary<string, string> filters)
-    {
-        foreach (var filter in filters)
-        {
-            students = students.Where(x => x.GetType().GetProperty(filter.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
-                .GetValue(x, null).ToString().Contains(filter.Value, StringComparison.OrdinalIgnoreCase));
-        }
-        return students;
-    }
-
-    private IEnumerable<Student> PaginateStudents(IEnumerable<Student> students, int pageNumber, int pageSize)
-    {
-        return students.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-    }
+   
+   
     #endregion
 }
 
