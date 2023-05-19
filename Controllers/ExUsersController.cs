@@ -38,6 +38,30 @@ public class ExUsersController : ControllerBase
         }
     }
 
+    [HttpGet("get-user")]
+    public async Task<IActionResult> GetUser(int page = 0, int results = 0, string seed = null)
+    {
+
+        try
+        {
+            var retList = (await getUsers(page, results, seed)).Results.Take(1).ToList();
+
+            if (retList == null || !retList.Any())
+            {
+                return BadRequest("list is empty!");
+
+            }
+            _logger.LogInformation("Fetched on {Time}", DateTime.Now);
+            return Ok(retList);
+        }
+        catch (Exception ex)
+        {
+
+            _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
+            return BadRequest(new List<Root>());
+        }
+    }
+
 
 
 

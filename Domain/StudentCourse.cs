@@ -1,4 +1,5 @@
 ﻿using System;
+using CodeChallenge.Helpers;
 
 namespace CodeChallenge.Domain;
 
@@ -15,3 +16,10 @@ public class StudentCourse : BaseEntity
 
 }
 
+public class StudentCourseResponseObj
+{
+    public bool IsSuccessful { get; set; }
+    public int StudentCourseId { get; set; }
+    public ResponseObj ResponseError { get; set; }
+
+}

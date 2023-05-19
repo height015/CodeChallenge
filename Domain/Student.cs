@@ -40,7 +40,7 @@ public class Student  : BaseEntity
 
 public class StudentResponse
 {
-    public int Id { get; set; }
+    public int StudentId { get; set; }
     public bool IsSuccess { get; set; }
     public ResponseObj ErrorResponse { get; set; }
 }
