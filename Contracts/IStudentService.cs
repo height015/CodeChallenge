@@ -1,5 +1,6 @@
 ﻿using System;
 using CodeChallenge.Domain;
+using CodeChallenge.Models;
 
 namespace CodeChallenge.Contracts;
 
@@ -13,12 +14,7 @@ public interface IStudentService
 
     Task<StudentResponse> Delete(int Id);
 
-    Task<IQueryable<Student>> List();
-
-    //IQueryable<Student> ApplySorting(IQueryable<Student> query, string sortBy, string sortDirection);
-
-    //IQueryable<Student> ApplyFiltering(IQueryable<Student> query, Dictionary<string, string> filters);
-
-    //IQueryable<Student> ApplyPagination(IQueryable<Student> query, int pageNumber, int pageSize);
+    Task<IEnumerable<Grade>> List(int studentId = 0,
+        int courseId = 0, string courseCode = null, int pageNumber = 1, int pageSize =5);
 }
 

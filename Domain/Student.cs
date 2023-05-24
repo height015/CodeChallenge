@@ -7,12 +7,6 @@ namespace CodeChallenge.Domain;
 public class Student  : BaseEntity
 {
 
-    public Student()
-    {
-        Grades = new HashSet<Grade>();
-        StudentCourses = new HashSet<StudentCourse>();
-    }
-
     [StringLength(50, MinimumLength = 2, ErrorMessage = "FirstName contains fewer or more characters than expected. (2 to 50 characters expected)")]
     [Required(ErrorMessage = "First Name is required", AllowEmptyStrings = false)]
     public string FirstName { get; set; }
@@ -28,10 +22,6 @@ public class Student  : BaseEntity
     [DataType(DataType.Date)]
     [Required(ErrorMessage = "Date Of Birth is required", AllowEmptyStrings = false)]
     public DateTime DateOfBirth { get; set; }
-
-    public ICollection<Grade> Grades { get; set; }
-    public ICollection<StudentCourse> StudentCourses { get; set; }
-
 }
 
 

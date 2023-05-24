@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using CodeChallenge.Helpers;
 
-namespace CodeChallenge.Domain;
+namespace CodeChallenge.Models;
 
-
-public class Grade : BaseEntity
+public class GradeVM
 {
     [Range(0, int.MaxValue, ErrorMessage = "Minimium Score must not be less than 0")]
     [Required(ErrorMessage = "Score is required", AllowEmptyStrings = false)]
@@ -19,16 +17,19 @@ public class Grade : BaseEntity
     public string Description { get; set; }
 
     public int StudentId { get; set; }
-    public Student Student { get; set; }
-
     public int CourseId { get; set; }
-    public Courses Course { get; set; }
+   
 }
 
-public class GradeResponseObj
-{
-    public bool IsSuccessful { get; set; }
-    public int GradeId { get; set; }
-    public ResponseObj ResponseError { get; set; }
 
+public class GradeListVM
+{
+    public int GradeId { get; set; }
+    public int Score { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public int StudentId { get; set; }
+    public int CourseId { get; set; }
+    public string CourseName { get; set; }
+    public string StudentName { get; set; }
 }

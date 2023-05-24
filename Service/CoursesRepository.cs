@@ -36,10 +36,7 @@ public class CoursesRepository : ICoursesService
                 response.ResponseError = _errorObj;
                 response.CourseId = -1;
                 return response;
-
             }
-
-
             var retVal = await _courseRepository.Insert(courses);
 
             if (retVal == null || retVal.Id < 1)

@@ -1,4 +1,9 @@
-﻿using CodeChallenge.Data;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using CodeChallenge.Contracts;
+using CodeChallenge.Data;
+using CodeChallenge.Data.Repository;
+using CodeChallenge.Domain;
 using CodeChallenge.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
@@ -32,12 +37,23 @@ builder.Services.AddLogging(options =>
     options.AddDebug();
 });
 
+//Repository
+builder.Services.AddScoped<IRepository<Grade>, Repository<Grade>>();
+builder.Services.AddScoped<IRepository<StudentCourse>, Repository<StudentCourse>>();
+builder.Services.AddScoped<IRepository<Student>, Repository<Student>>();
+builder.Services.AddScoped<IRepository<Courses>, Repository<Courses>>();
 
 
 
 builder.Logging.SetMinimumLevel(LogLevel.Error);
 
 builder.Services.AddScoped<IRandomUserService, RandomUserManager>();
+
+
+builder.Services.AddScoped<IStudentService, StudentRepository>();
+builder.Services.AddScoped<IStudentCourseService, StudentCourseRepository>();
+builder.Services.AddScoped<IGradeService, GradeRepository>();
+builder.Services.AddScoped<ICoursesService, CoursesRepository>();
 
 builder.Services.AddHttpClient("YourApiClient", client =>
 {
@@ -47,6 +63,11 @@ builder.Services.AddHttpClient("YourApiClient", client =>
 });
 
 
+JsonSerializerOptions options = new()
+{
+    ReferenceHandler = ReferenceHandler.IgnoreCycles,
+    WriteIndented = true
+};
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

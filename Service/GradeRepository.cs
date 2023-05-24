@@ -1,21 +1,27 @@
 ﻿using CodeChallenge.Contracts;
-using CodeChallenge.Data;
 using CodeChallenge.Data.Repository;
 using CodeChallenge.Domain;
 using CodeChallenge.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace CodeChallenge.Service;
 
 public class GradeRepository : IGradeService
 {
     private readonly IRepository<Grade> _gradeRepository;
+    private readonly IRepository<Courses> _courseRepository;
+    private readonly IRepository<StudentCourse> _studentCoursesRepository;
+
     private readonly ILogger<GradeRepository> _logger;
     private ResponseObj _errorObj;
 
-    public GradeRepository(AppDbContext appDbContext, ILogger<GradeRepository> logger)
+    public GradeRepository(IRepository<Grade> gradeRepository,
+        IRepository<StudentCourse> studentCoursesRepository, IRepository<Courses> courseRepository, ILogger<GradeRepository> logger)
     {
-        _gradeRepository = new Repository<Grade>(appDbContext);
-        _errorObj = new ResponseObj();
+        _gradeRepository = gradeRepository;
+        _courseRepository = courseRepository;
+        _studentCoursesRepository = studentCoursesRepository;
+         _errorObj = new ResponseObj();
         _logger = logger;
     }
 
@@ -49,8 +55,6 @@ public class GradeRepository : IGradeService
                 response.ResponseError = _errorObj;
                 return response;
             }
-
-
             response.IsSuccessful = true;
             response.GradeId = retVal.Id;
             return response;
@@ -125,6 +129,35 @@ public class GradeRepository : IGradeService
 
     }
 
+    public async Task<Grade> GetGradeByStudentId(int studentId)
+    {
+        var retVal = new Grade();
+        try
+        {
+            var query = from g in _gradeRepository.Table
+                       where g.StudentId == studentId
+                       select  g;
+            query = query.Include(g => g.Course);
+            query = query.Include(g => g.Student);
+
+            retVal = await query.FirstOrDefaultAsync();
+
+            return retVal;
+
+            //var query = from g in _gradeRepository.Table
+            //            join c in _courseRepository.Table on g.StudentId equals studentId
+            //            select g;
+
+            
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.StackTrace, ex.Source, ex.Message);
+            return retVal;
+        }
+
+    }
+
     public async Task<int> GetTotalCount()
     {
         var retVal = from u in _gradeRepository.Table
@@ -133,18 +166,46 @@ public class GradeRepository : IGradeService
 
     }
 
-    public async Task<IEnumerable<Grade>> List()
+    public async Task<IEnumerable<Grade>> List(int studentId = 0, int courseId = 0,
+        string? courseCode = null, int pageNumber = 1, int pageSize = 5)
     {
         var retVal = Enumerable.Empty<Grade>();
 
         try
         {
+            var query = from g in _gradeRepository.Table
+                      join c in _courseRepository.Table on g.CourseId equals c.Id
+                      select g;
+            var queryCount = query.Count();
 
-            retVal = from c in _gradeRepository.Table
-                     where c != null
-                     select c;
+            if (courseId > 0)
+            {
+                query = query.Where(x => x.Course.Id == courseId);
+            }
+
+            if (studentId > 0)
+            {
+                query = query.Where(x => x.Student.Id == studentId);
+            }
+
+
+            if (!string.IsNullOrEmpty(courseCode) || courseCode?.Length > 2)
+            {
+                query = query.Where(x => x.Course.CourseCode == courseCode);
+            }
+
+            int totalCount = queryCount;
+
+            // Calculate the number of records to skip
+            int skipCount = (pageNumber - 1) * pageSize;
+
+
+            retVal = query.Skip(skipCount)
+            .Take(pageSize)
+            .ToList();
 
             return await Task.FromResult(retVal.ToList());
+           
         }
         catch (Exception ex)
         {

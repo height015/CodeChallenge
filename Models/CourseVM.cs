@@ -1,12 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using CodeChallenge.Helpers;
 
-namespace CodeChallenge.Domain;
+namespace CodeChallenge.Models;
 
-
-public class Courses : BaseEntity
+public class CourseVM
 {
-
     [StringLength(50, MinimumLength = 2, ErrorMessage = "Course Name contains fewer or more characters than expected. (2 to 50 characters expected)")]
     [Required(ErrorMessage = "Course Name is required", AllowEmptyStrings = false)]
     public string CourseName { get; set; }
@@ -21,10 +18,15 @@ public class Courses : BaseEntity
 
 }
 
-public class CoursesResponseObj
+public class CourseVMList
 {
-    public bool IsSuccessful { get; set; }
-    public int CourseId { get; set; }
-    public ResponseObj ResponseError { get; set; }
+
+  public int CourseId { get; set; }
+
+  public string CourseName { get; set; }
+
+  public string CourseTitle { get; set; }
+
+  public string CourseCode { get; set; }
 
 }

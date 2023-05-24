@@ -1,10 +1,10 @@
-﻿using System;
-using System.Reflection;
-using CodeChallenge.Contracts;
+﻿using CodeChallenge.Contracts;
 using CodeChallenge.Data;
 using CodeChallenge.Data.Repository;
 using CodeChallenge.Domain;
 using CodeChallenge.Helpers;
+using CodeChallenge.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CodeChallenge.Service;
 
@@ -12,12 +12,22 @@ public class StudentRepository : IStudentService
 {
 
     private readonly IRepository<Student> _studentRepository;
+    private readonly IRepository<Grade> _studentGradeRepository;
+    private readonly IRepository<StudentCourse> _studentCoursesRepository;
     private readonly ILogger<StudentRepository> _logger;
     private ResponseObj _errorObj;
 
-    public StudentRepository(AppDbContext appDbContext, ILogger<StudentRepository> logger)
+
+  
+
+    public StudentRepository(ILogger<StudentRepository> logger,
+        IRepository<Grade> studentGradeRepository,
+        IRepository<StudentCourse> studentCoursesRepository, IRepository<Student> studentRepository)
     {
-        _studentRepository = new Repository<Student>(appDbContext);
+        _studentRepository = studentRepository;
+        _studentGradeRepository = studentGradeRepository;
+        _studentCoursesRepository = studentCoursesRepository;
+
         _errorObj = new ResponseObj();
         _logger = logger;
     }
@@ -41,8 +51,6 @@ public class StudentRepository : IStudentService
                 return response;
 
             }
-
-
             var retVal = await _studentRepository.Insert(student);
 
             if (retVal == null || retVal.Id < 1)
@@ -114,11 +122,18 @@ public class StudentRepository : IStudentService
 
     public async Task<Student> Fetch(int id)
     {
-        var retVal = new Student();
+        var retVal =  new Student();
         try
         {
-            retVal = await _studentRepository.getById(id);
-            return retVal;
+            //var query  = from s in _studentRepository.Table
+            //            join sc in _studentCoursesRepository.Table on s.Id equals sc.StudentId
+            //             where s.StudentCourses.Any()
+            //             where s.Id == id && sc.StudentId == id
+            //            orderby s.Id
+            //            select s;
+            // retVal = query.ToList();
+               return await _studentRepository.getById(id);
+            //return retVal;
         }
         catch (Exception ex)
         {
@@ -136,23 +151,57 @@ public class StudentRepository : IStudentService
 
     }
 
-    public async Task<IQueryable<Student>> List()
+    public async Task<IEnumerable<Grade>> List(int studentId = 0,
+        int courseId = 0, string? courseCode = null, int pageNumber = 1, int pageSize = 5)
     {
-        var retVal = Enumerable.Empty<Student>();
+        var retVal = Enumerable.Empty<Grade>();
 
         try
         {
 
-            retVal = from c in _studentRepository.Table
-                     where c != null
-                     select c;
+            var ewe = from st in _studentGradeRepository.Table
+                      join g in _studentGradeRepository.Table on st.Id equals g.StudentId
+                      select g;
+            var check = ewe.Count();
 
-            return await Task.FromResult(retVal.AsQueryable());
+          var query =  _studentGradeRepository.Table;
+            query = query.Include(g => g.Course);
+            query = query.Include(g => g.Student);
+
+            var queryCount = query.Count();
+         
+            if (courseId > 0 )
+            {
+               query = query.Where(x => x.Course.Id == courseId);
+            }
+
+            if (studentId> 0)
+            {
+                query = query.Where(x => x.Student.Id == studentId);
+            }
+           
+            if (!string.IsNullOrEmpty(courseCode) || courseCode?.Length > 2)
+            {
+            query = query.Where(x => x.Course.CourseCode == courseCode);
+                
+            }
+
+            int totalCount = queryCount;
+
+            // Calculate the number of records to skip
+            int skipCount = (pageNumber - 1) * pageSize;
+
+            retVal = query.Skip(skipCount)
+            .Take(pageSize)
+            .ToList();
+
+            return await Task.FromResult(retVal.ToList());
+
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message);
-            return Enumerable.Empty<Student>().AsQueryable();
+            return Enumerable.Empty<Grade>().ToList();
         }
 
     }
