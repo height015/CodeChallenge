@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using CodeChallenge.Contracts;
 using CodeChallenge.Domain;
+using CodeChallenge.Helper;
 using CodeChallenge.Models;
 using CodeChallenge.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +46,10 @@ public class CourseController : BaseApiController
             if (retVal.CourseId < 1)
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError));
             _logger.LogInformation($"Entity Created {retVal} on {DateTime.UtcNow}");
-            return Ok((HttpStatusCode.Created, $"created Successfully"));
+
+            return Ok(new ApiStatusResponse(HttpStatusCode.Created,
+               $"created Successfully"));
+           
         }
         catch (Exception ex)
         {
@@ -101,7 +105,6 @@ public class CourseController : BaseApiController
                 return BadRequest(HttpStatusCode.BadRequest);
             }
 
-
             //Could Use AutoMapper Here...
 
             var course = new Courses
@@ -121,13 +124,19 @@ public class CourseController : BaseApiController
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError.ErrorMessage));
 
             _logger.LogInformation($"Entity Updated {retVal} on {DateTime.UtcNow}");
-            return Ok((HttpStatusCode.OK, $"Record Updated"));
+
+            return Ok(new ApiStatusResponse(HttpStatusCode.OK,
+                        $"Record Updated"));
+
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return BadRequest((HttpStatusCode.BadRequest, $"Something Bad Happened, Pls Try Again Later"));
+
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+                          $"Something Bad Happened, Pls Try Again Later"));
+
         }
 
     }
@@ -145,7 +154,7 @@ public class CourseController : BaseApiController
 
             if (!deletedCourse.IsSuccessful)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"Unable to complete operation"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
             }
 
             _logger.LogInformation($"Delete Operation {deletedCourse.CourseId} on {DateTime.UtcNow}");
@@ -154,7 +163,7 @@ public class CourseController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return BadRequest((HttpStatusCode.BadRequest, $"Something Bad Happened, Pls Try Again Later"));
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest, $"Something Bad Happened, Pls Try Again Later"));
 
         }
     }

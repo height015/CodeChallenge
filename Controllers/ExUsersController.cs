@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CodeChallenge.ExternalApiCall;
 using CodeChallenge.Service;
+using CodeChallenge.Helper;
+using System.Net;
 
 namespace WebApplication.Controllers;
 
@@ -58,7 +60,9 @@ public class ExUsersController : ControllerBase
         {
 
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return BadRequest(new List<Root>());
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+             $"Internal Problem, Pleaase try again"));
+         
         }
     }
 

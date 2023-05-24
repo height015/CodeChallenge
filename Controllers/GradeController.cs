@@ -2,6 +2,7 @@
 using System.Net;
 using CodeChallenge.Contracts;
 using CodeChallenge.Domain;
+using CodeChallenge.Helper;
 using CodeChallenge.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,7 @@ public class GradeController : BaseApiController
     {
         if (gradeVM == null)
         {
-            return BadRequest((HttpStatusCode.BadRequest, $"this object: {nameof(gradeVM)} is empty"));
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
         }
 
         try
@@ -40,15 +41,17 @@ public class GradeController : BaseApiController
 
             if (gradeVM.CourseId < 1)
             {
-                return BadRequest("Invalid Course Selection");
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+             $"Invalid Course Selection"));
             }
             if (gradeVM.StudentId < 1)
             {
-                return BadRequest("Invalid Student Selection");
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+             $"Invalid Student Selection, Pleaase try again"));
             }
             if (!ModelState.IsValid)
             {
-                return BadRequest(HttpStatusCode.BadRequest);
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
             }
 
             var studentObj = await _studentService.Fetch(gradeVM.StudentId);
@@ -81,9 +84,6 @@ public class GradeController : BaseApiController
             gradeCollectionObj.Add(grade);
             studentCourseCollectObj.Add(studentCourse);
 
-
-           
-
             var retVal = await _gradeService.Create(grade);
             var retVal2 = await _studentCourseService.Create(studentCourse);
 
@@ -95,13 +95,18 @@ public class GradeController : BaseApiController
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError.ErrorMessage));
 
             _logger.LogInformation($"Entity Updated {retVal} on {DateTime.UtcNow}");
-            return Ok((HttpStatusCode.Created, $"created Successfully"));
+
+            return Ok(new ApiStatusResponse(HttpStatusCode.Created,
+           $"created Successfully"));
+
+            
         }
         catch (Exception ex)
         {
             var message = ex.InnerException;
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, message);
-            return BadRequest(HttpStatusCode.InternalServerError);
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"created Successfully"));
 
         }
 
@@ -151,15 +156,17 @@ public class GradeController : BaseApiController
 
             if (gradeVm.CourseId < 1)
             {
-                return BadRequest("Invalid Course Selection");
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           "Invalid Course Selection"));
             }
             if (gradeVm.StudentId < 1)
             {
-                return BadRequest("Invalid Student Selection");
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           "Invalid Student Selection"));
             }
             if (!ModelState.IsValid)
             {
-                return BadRequest(HttpStatusCode.BadRequest);
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
             }
 
             var studentObj = await _studentService.Fetch(gradeVm.StudentId);
@@ -206,13 +213,14 @@ public class GradeController : BaseApiController
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError.ErrorMessage));
 
             _logger.LogInformation($"Entity Updated {retVal} on {DateTime.UtcNow}");
-            return Ok((HttpStatusCode.OK, $"Record Updated"));
+            return Ok(new ApiStatusResponse(HttpStatusCode.OK,
+           "Record Created"));
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return BadRequest((HttpStatusCode.BadRequest, $"Something Bad Happened, Pls Try Again Later"));
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
         }
 
     }
@@ -230,16 +238,18 @@ public class GradeController : BaseApiController
 
             if (!deletedStudent.IsSuccessful)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"Unable to complete operation"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.Created,
+           $"Unable to complete operation"));
             }
 
             _logger.LogInformation($"Delete Operation {deletedStudent.GradeId} on {DateTime.UtcNow}");
-            return Ok("Success");
+            return Ok(new ApiStatusResponse(HttpStatusCode.OK,
+           "Success"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return BadRequest((HttpStatusCode.BadRequest, $"Something Bad Happened, Pls Try Again Later"));
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
 
         }
     }
@@ -273,7 +283,7 @@ public class GradeController : BaseApiController
             // Handle the exception
             // Log the error, return an error response, etc.
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return StatusCode(500, "An error occurred");
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
         }
     }
 }

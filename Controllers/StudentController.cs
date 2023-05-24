@@ -2,6 +2,7 @@
 using CodeChallenge.Contracts;
 using CodeChallenge.Data.Repository;
 using CodeChallenge.Domain;
+using CodeChallenge.Helper;
 using CodeChallenge.Models;
 using CodeChallenge.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -33,11 +34,12 @@ public class StudentController : BaseApiController
     {
         if (studentVM == null)
         {
-            return BadRequest((HttpStatusCode.BadRequest, $"this object: {nameof(studentVM)} is empty"));
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"{studentVM} is null or empty"));
         }
         if (!ModelState.IsValid)
         {
-            return BadRequest(HttpStatusCode.BadRequest);
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
         }
         try
         {
@@ -51,16 +53,19 @@ public class StudentController : BaseApiController
             };
             var retVal = await _studentService.Create(student);
             if (retVal.StudentId < 1)
-                return BadRequest((HttpStatusCode.BadRequest, retVal.ErrorResponse));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"{retVal.ErrorResponse.ErrorMessage}"));
 
             _logger.LogInformation($"Entity Created {retVal} on {DateTime.UtcNow}");
-            return Ok((HttpStatusCode.Created, $"created Successfully"));
+            return Ok(new ApiStatusResponse(HttpStatusCode.Created,
+           $"created Successfully"));
         }
         catch (Exception ex)
         {
             var message = ex.InnerException;
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, message);
-            return BadRequest(HttpStatusCode.InternalServerError);
+            return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"Bad Request"));
 
         }
 
@@ -106,32 +111,40 @@ public class StudentController : BaseApiController
         {
             if (studentEditVM == null)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"this object: {nameof(studentEditVM)} is empty"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"{studentEditVM} can not be null or empty"));
             }
 
             if (string.IsNullOrEmpty(studentEditVM.GivenName))
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"{(studentEditVM.GivenName)} is required and can't be null or Empty"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest));
             }
 
-            if (studentEditVM.GivenName.Length < 2 || studentEditVM.GivenName.Length > 49)
+            if (studentEditVM.GivenName.Length < 2 || studentEditVM.GivenName.Length > 50)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"{(studentEditVM.GivenName)} must be between 2 and 50 characters"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"{studentEditVM.GivenName} must be betwwen 2 and 50 characters"));
             }
 
             if (string.IsNullOrEmpty(studentEditVM.SurnName))
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"{(studentEditVM.SurnName)} is required and can't be null or Empty"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+           $"{studentEditVM.SurnName} is required and can't be null or Empty"));
+
             }
 
             if (studentEditVM.SurnName.Length < 2 || studentEditVM.SurnName.Length > 49)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"{(studentEditVM.SurnName)} must be between 2 and 50 characters"));
+
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+                    $"{(studentEditVM.SurnName)} must be between 2 and 50 characters"));
+
             }
 
             if (studentEditVM.Class.Length < 2 || studentEditVM.Class.Length > 49)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"{(studentEditVM.Class)} must be between 2 and 50 characters"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+                  $"{studentEditVM.Class} must be between 2 and 50 characters"));
             }
 
             var student = new Student
@@ -147,17 +160,27 @@ public class StudentController : BaseApiController
             var updatedStudent = await _studentService.Update(student);
             if (updatedStudent.StudentId < 1)
             {
-                return BadRequest((HttpStatusCode.BadRequest, $"Unbale to update Record"));
+                return BadRequest(new ApiStatusResponse(HttpStatusCode.BadRequest,
+                 $"Unbale to update Record"));
+
+                
             }
 
             _logger.LogInformation($"Entity Updated {student} on {DateTime.UtcNow}");
-            return Ok((HttpStatusCode.OK, $"Record Updated"));
+
+            return Ok(new ApiStatusResponse(HttpStatusCode.Created,
+               $"Record Updated"));
+
+           
 
         }
         catch (Exception ex)
         {
             _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
-            return BadRequest((HttpStatusCode.BadRequest, $"Something Bad Happened, Pls Try Again Later"));
+
+            return Ok(new ApiStatusResponse(HttpStatusCode.BadRequest,
+            $"Something Bad Happened, Pls Try Again Later"));
+
         }
    
     }
