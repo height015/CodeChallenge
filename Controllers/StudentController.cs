@@ -53,6 +53,7 @@ public class StudentController : BaseApiController
             if (retVal.StudentId < 1)
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ErrorResponse));
 
+            _logger.LogInformation($"Entity Created {retVal} on {DateTime.UtcNow}");
             return Ok((HttpStatusCode.Created, $"created Successfully"));
         }
         catch (Exception ex)
@@ -91,9 +92,9 @@ public class StudentController : BaseApiController
             Score = student.Score,
             Title = student.Title,
             Description = student.Description,
-};
+        };
 
-
+        _logger.LogInformation($"Entity Feteched {retVal} on {DateTime.UtcNow}");
         return Ok(retVal);
     }
 
@@ -149,6 +150,7 @@ public class StudentController : BaseApiController
                 return BadRequest((HttpStatusCode.BadRequest, $"Unbale to update Record"));
             }
 
+            _logger.LogInformation($"Entity Updated {student} on {DateTime.UtcNow}");
             return Ok((HttpStatusCode.OK, $"Record Updated"));
 
         }
@@ -174,6 +176,8 @@ public class StudentController : BaseApiController
             {
                 return BadRequest((HttpStatusCode.BadRequest, $"Unable to complete operation"));
             }
+
+            _logger.LogInformation($"Entity Deleted {deletedStudent.StudentId} on {DateTime.UtcNow}");
 
             return Ok("Success");
         }
@@ -212,13 +216,14 @@ public class StudentController : BaseApiController
                 
             });
 
-
+            _logger.LogInformation($"Fetched List {retVal} on {DateTime.UtcNow}");
             return Ok(retVal);
         }
         catch (Exception ex)
         {
             // Handle the exception
             // Log the error, return an error response, etc.
+            _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
             return StatusCode(500, "An error occurred");
         }
     }

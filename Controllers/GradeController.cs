@@ -1,10 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿
 using System.Net;
 using CodeChallenge.Contracts;
 using CodeChallenge.Domain;
 using CodeChallenge.Models;
-using CodeChallenge.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeChallenge.Controllers;
@@ -96,7 +94,7 @@ public class GradeController : BaseApiController
             if (retVal2.StudentCourseId < 1)
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError.ErrorMessage));
 
-
+            _logger.LogInformation($"Entity Updated {retVal} on {DateTime.UtcNow}");
             return Ok((HttpStatusCode.Created, $"created Successfully"));
         }
         catch (Exception ex)
@@ -134,7 +132,7 @@ public class GradeController : BaseApiController
             CourseName = courseName,
         };
 
-
+        _logger.LogInformation($"Entity Fetched {retVal} on {DateTime.UtcNow}");
         return Ok(retVal);
     }
 
@@ -207,7 +205,7 @@ public class GradeController : BaseApiController
             if (retVal2.StudentCourseId < 1)
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError.ErrorMessage));
 
-
+            _logger.LogInformation($"Entity Updated {retVal} on {DateTime.UtcNow}");
             return Ok((HttpStatusCode.OK, $"Record Updated"));
 
         }
@@ -235,6 +233,7 @@ public class GradeController : BaseApiController
                 return BadRequest((HttpStatusCode.BadRequest, $"Unable to complete operation"));
             }
 
+            _logger.LogInformation($"Delete Operation {deletedStudent.GradeId} on {DateTime.UtcNow}");
             return Ok("Success");
         }
         catch (Exception ex)
@@ -249,8 +248,6 @@ public class GradeController : BaseApiController
     public async Task<ActionResult<List<GradeListVM>>> List(int studentId = 0, int courseId = 0,
         string? courseCode = null, int pageNumber = 1, int pageSize = 5)
     {
-
-
         try
         {
             // Get the initial query
@@ -268,13 +265,14 @@ public class GradeController : BaseApiController
 
             });
 
-
+            _logger.LogInformation($"List Fecthed {retVal} on {DateTime.UtcNow}");
             return Ok(retVal);
         }
         catch (Exception ex)
         {
             // Handle the exception
             // Log the error, return an error response, etc.
+            _logger.LogError(ex.StackTrace, ex.Source, ex.Message, ex.InnerException);
             return StatusCode(500, "An error occurred");
         }
     }

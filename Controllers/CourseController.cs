@@ -44,7 +44,7 @@ public class CourseController : BaseApiController
             var retVal = await _courseService.Create(course);
             if (retVal.CourseId < 1)
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError));
-
+            _logger.LogInformation($"Entity Created {retVal} on {DateTime.UtcNow}");
             return Ok((HttpStatusCode.Created, $"created Successfully"));
         }
         catch (Exception ex)
@@ -77,7 +77,7 @@ public class CourseController : BaseApiController
             CourseName = course.CourseName
            
         };
-
+        _logger.LogInformation($"Entity Fetched {retVal} on {DateTime.UtcNow}");
         return Ok(retVal);
     }
 
@@ -120,6 +120,7 @@ public class CourseController : BaseApiController
             if (retVal.CourseId < 1)
                 return BadRequest((HttpStatusCode.BadRequest, retVal.ResponseError.ErrorMessage));
 
+            _logger.LogInformation($"Entity Updated {retVal} on {DateTime.UtcNow}");
             return Ok((HttpStatusCode.OK, $"Record Updated"));
 
         }
@@ -147,6 +148,7 @@ public class CourseController : BaseApiController
                 return BadRequest((HttpStatusCode.BadRequest, $"Unable to complete operation"));
             }
 
+            _logger.LogInformation($"Delete Operation {deletedCourse.CourseId} on {DateTime.UtcNow}");
             return Ok("Success");
         }
         catch (Exception ex)

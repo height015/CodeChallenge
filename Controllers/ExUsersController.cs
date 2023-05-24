@@ -62,9 +62,6 @@ public class ExUsersController : ControllerBase
         }
     }
 
-
-
-
     private async Task<Root> getUsers(int page = 0, int results = 0, string seed = null)
     {
         try
